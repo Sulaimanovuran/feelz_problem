@@ -87,7 +87,7 @@ def add_students(text):
                 students[find_sublist_with_length_one(students)] = students[find_sublist_with_length_one(students)] + [student_name] + student_l_dates
             else:
                 raise
-        print(students)
+        # print(students)
         write_s(students)
         return "Данные успешно записаны"
     except Exception as ex:
@@ -104,7 +104,7 @@ def days_until_date(input_date_str):
 
     delta = input_date - current_date
 
-    if delta.days < 7:
+    if delta.days < 30 and delta.days > 0:
         return delta.days + 1
     else:
         return None
