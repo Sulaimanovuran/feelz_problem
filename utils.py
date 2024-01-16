@@ -87,30 +87,6 @@ def find_sublist_with_length_one(lst):
 
 
 
-def find_sublist_by_first_element(lst, target_value):
-    for i, sublist in enumerate(lst):
-        if len(sublist) > 0 and sublist[0] == target_value:
-            return i
-    return None  # Возвращаем None, если подходящий подсписок не найден
-
-
-def edit_s(pk, char, value):
-    data = read_s()
-    student_id = find_sublist_by_first_element(data, pk)
-    if char == 'name':
-        data[student_id][1] = value
-
-    elif char == 'start_date':
-        data[student_id] = data[student_id][:2] + get_next_lectures(value)
-        # print(data[student_id][:3] + get_next_lectures(value))
-    elif char == 'rescheduled':
-        data[student_id] = data[student_id][:2] + get_next_lectures(data[student_id][2], int(value))
-
-    write_s(data)
-
-    return "Данные успешно записаны"
-
-
 ##################### Add Student ########################
 def add_students(student_data):
     try:
@@ -118,12 +94,7 @@ def add_students(student_data):
         lectures = get_next_lectures(student_data[-1], student_data[0])
         # print(lectures)
         students.append([student_data[1]] + lectures)
-        write_s(sheet_pages[student_data[0]], students)
-        message = f'<b>{student_data[1]}</b><ul>'
-        for i in lectures:
-            message+=f'<li>{i}</li>'
-        message+='</ul>'
-        return message
+        return write_s(sheet_pages[student_data[0]], students), lectures
     
     except TypeError: 
         return lectures
@@ -133,19 +104,17 @@ def add_students(student_data):
         return f"Ошибка записи данных\nInfo:{ex}"
     
 
+##################### Find Rabbit Student ########################
 
 def days_until_date(input_date_str):
-
     input_date = datetime.strptime(input_date_str, "%d.%m.%Y")
-
     current_date = datetime.now()
-
     delta = input_date - current_date
-
-    if delta.days < 30 and delta.days > 0:
+    if delta.days < 3 and delta.days > 0:
         return delta.days + 1
     else:
         return None
+
 
 
 def rabbits_hunt():
@@ -157,7 +126,51 @@ def rabbits_hunt():
                 rabbits+=f"{student[0]}. {student[1]}: конец: {student[-1]} – дней: {days_until_date(student[-1])}\n"
         else:
             continue
-    
     return rabbits
 
-    
+
+##################### Search Student ########################
+def search_student(name):
+    for wks_name, page_data in zip(['mwf', 'tts', 'ed'], [wks, wks2, wks3]):
+        for indx, sublist in enumerate(read_s(page_data)):
+            if sublist[0].lower() == name.lower():
+                return wks_name, sublist, indx
+            else:
+                continue
+    return None
+
+
+##################### Payment ########################
+def next_subscription(format, indx, action, date=None):
+    students = read_s(sheet_pages[format])
+    new_lectures = []
+    prev_lectures = []
+
+    if action == 'continue':
+        new_lectures = get_next_lectures(students[indx][-1], format, 1)[1:]
+    elif action == 'new_date' and date:
+        new_lectures = get_next_lectures(date, format)
+    else:
+        return None
+    try:
+        if format != 'ed':
+            prev_lectures = students[indx][-12:]
+        elif format == 'ed':
+            prev_lectures = students[indx][-20:]
+        students[indx] += new_lectures
+        write_s(sheet_pages[format], students)
+    except:
+        prev_lectures = None
+
+    return new_lectures, prev_lectures
+
+
+
+
+
+
+'''
+если action == 'continue' вызываем функцию get_next_lectures(date, format, 1)[1:]
+
+если action == 'new_date' вызываем функцию get_next_lectures(date, format)
+'''

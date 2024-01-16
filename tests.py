@@ -95,3 +95,4 @@ def create_image():
 
 # create_image()
 # print(get_next_lectures('15.01.2024', 'ed'))
+
