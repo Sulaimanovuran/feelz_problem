@@ -70,7 +70,7 @@ def process_student_data(user_id):
             else:
                 message+=f'   {num}) {date}```'
 
-        bot.send_photo(user_id, photo=open('Unknown.png', 'rb'), caption=message, parse_mode='Markdown')
+        bot.send_photo(user_id, photo=open('1.png', 'rb'), caption=message, parse_mode='Markdown')
         bot.send_message(user_id, text="Что делаем?", reply_markup= cm.create_menu('main'))
     else:
         bot.send_message(user_id, student_validated_data)
@@ -132,13 +132,13 @@ def process_student_data_new_date(user_id):
                 message+=f'   {num}) {date}\n'
             else:
                 message+=f'   {num}) {date}```'
-        bot.send_message(user_id, text=message, reply_markup=cm.create_menu('pay'), parse_mode="Markdown")
+        bot.send_photo(user_id, photo=open('Unknown.png', 'rb'), caption=message, reply_markup=cm.create_menu('pay'), parse_mode='Markdown')
     else:
         bot.send_message(user_id, text=new_lectures, reply_markup=cm.create_menu('main'), parse_mode="Markdown")
 
 
 ################## FREEZE STUDENT ########################        
-freeze_question = ['Введите Ф.И. ученика', 'Введите номера уроков через запятую которые хотите заморозить: 5,7,9...']
+freeze_question = ['Введите Ф.И. ученика', 'Введите номера уроков через запятую которые хотите заморозить(5,6,7...) ТОЛЬКО ПО ПОРЯДКУ']
 freeze_answers = []
 def start_freeze_student(message):
     global freeze_answers, search_results
@@ -149,7 +149,7 @@ def start_freeze_student(message):
 last_lectures = ''
 
 def ask_next_question_freeze(user_id):
-    global last_lectures
+    global last_lectures, search_results
     if len(freeze_answers) < len(freeze_question):
         if len(freeze_answers) == 1:
             search_results = search_student(freeze_answers[0])
@@ -168,7 +168,7 @@ def ask_next_question_freeze(user_id):
 
 def process_student_data_freeze(user_id):
     message=f'Ученик {freeze_answers[0]}\nЗаморозить уроки №:{freeze_answers[-1]}.\nВсе верно?\n{last_lectures}' 
-    bot.send_message(user_id, text=message, reply_markup=cm.create_menu('cold'))
+    bot.send_message(user_id, text=message, reply_markup=cm.create_menu('cold'), parse_mode='Markdown')
 
 ################## CALLBACK HANDLER ########################        
 @bot.callback_query_handler(func=lambda call: True)
@@ -182,7 +182,6 @@ def callback_inline(call):
         add_flag=False
         new_date_flag = False
         start_add_student_payment(call.message)
-        # bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Новое расписание", reply_markup= cm.create_menu('pay'))
 
     if call.data == 'back':
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Что делаем?", reply_markup= cm.create_menu('main'))
@@ -212,7 +211,8 @@ def callback_inline(call):
                     message+=f'   {num}) {date}\n'
                 else:
                     message+=f'   {num}) {date}```'
-            bot.send_message(call.message.chat.id, text=message, reply_markup=cm.create_menu('pay'), parse_mode="Markdown")
+            bot.send_photo(call.message.chat.id, photo=open('2.png', 'rb'), caption=message, reply_markup=cm.create_menu('pay'), parse_mode='Markdown')
+            # bot.send_message(call.message.chat.id, text=message, reply_markup=cm.create_menu('pay'), parse_mode="Markdown")
         else:
             bot.send_message(call.message.chat.id, text=lectures[0], reply_markup=cm.create_menu('main'), parse_mode="Markdown")
 
@@ -224,7 +224,7 @@ def callback_inline(call):
                     message+=f'   {num}) {date}\n'
                 else:
                     message+=f'   {num}) {date}```'
-            bot.send_message(call.message.chat.id, text=message, reply_markup=cm.create_menu('main'), parse_mode="Markdown")
+            bot.send_photo(call.message.chat.id, photo=open('3.png', 'rb'), caption=message, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
         else:
             bot.send_message(call.message.chat.id, text='Нет предыдущих занятий', reply_markup=cm.create_menu('main'))
 
@@ -237,26 +237,33 @@ def callback_inline(call):
     """Freeze"""
     if call.data == 'freeze':
         freeze = freeze_student(search_results[0], search_results[-1], freeze_answers[-1])
+        message = f'Новое расписание\n*{freeze_answers[0]}*\n```'
         if isinstance(freeze, list):
             for num, date in enumerate(freeze, start=1):
+                if num == len(freeze):
+                    message+=f'   {num}) {date}```'
+                else:
+                    message+=f'   {num}) {date}\n'
                 
-
-
+            bot.send_photo(call.message.chat.id, photo=open('Unknown.png', 'rb'), caption=message, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
+        else:
+            bot.send_message(call.message.chat.id, text=freeze, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
         
 
-    
 
+"""Для остановки"""
+import signal
+import sys
 
+def signal_handler(sig, frame):
+    print("Вы нажали Ctrl+C. Завершение работы бота.")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
     while True:
         try:
-            bot.polling(none_stop=True, interval=2)
-
-            break
-        except (telebot.apihelper.ApiException, RequestException) as e:
-
-            bot.stop_polling()
-
-            time.sleep(15)
-
+            bot.polling(none_stop=True)
+        except Exception as e:
+            print(f"Error in main loop: {e}")

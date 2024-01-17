@@ -116,5 +116,40 @@ def filter_dates(input_dates):
 input_dates = ['13.01.2024', '15.01.2024', '17.01.2024', '18.01.2024', '19.01.2024', '20.01.2024', '31.01.2024', '02.02.2024', '05.02.2024', '07.02.2024', '09.02.2024']
 filtered_dates = filter_dates(input_dates)
 
-print("Даты, которые меньше или равны текущей дате:")
-print(filtered_dates)
+
+f = ['John Snow', '01.01.2024', '03.01.2024', '05.01.2024', '08.01.2024', '10.01.2024', '12.01.2024', '15.01.2024', '17.01.2024', '19.01.2024', '22.01.2024', '24.01.2024', '26.01.2024']
+
+
+def freezing(lectures, days, format):
+    indexes = list(map(int, days.split(',')))
+    m = len(days)
+    n = len(lectures)
+    check = False
+    if format == 'mwf':
+        ras = [0, 2, 4]
+    elif format == 'tts':
+        ras = [1, 3, 5]
+    else:
+        ras = [0, 1, 2, 3, 4]
+        check = True
+    start_date = datetime.strptime(lectures[-1],'%d.%m.%Y') + timedelta(days=2 - check)
+    for _ in range(m):
+        while start_date.weekday() not in ras:
+            start_date += timedelta(days=1)
+        lectures.append(start_date.strftime("%d.%m.%Y"))
+        start_date += timedelta(days=2 - check)
+    result = []
+    for idx, val in enumerate(lectures):
+        if idx + 1 in indexes:
+            continue
+        result.append(val)
+
+    if format in ['mwf','tts']:
+        return result[:12]
+    else:
+        return result[:20]
+
+
+dates = ['01.01.2024', '03.01.2024', '05.01.2024', '08.01.2024', '10.01.2024', '12.01.2024', '15.01.2024', '17.01.2024', '19.01.2024', '22.01.2024', '24.01.2024', '26.01.2024']
+dates2 = ['01.01.2024', '02.01.2024', '03.01.2024', '04.01.2024', '05.01.2024', '08.01.2024', '09.01.2024', '10.01.2024', '11.01.2024', '12.01.2024', '15.01.2024', '16.01.2024', '17.01.2024', '18.01.2024', '19.01.2024', '22.01.2024', '23.01.2024', '24.01.2024', '25.01.2024', '26.01.2024']
+print(freezing(dates2, '9,10', 'ed'))

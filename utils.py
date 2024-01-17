@@ -67,11 +67,16 @@ def read_s(wks):
     return students
 
 
-def write_s(wks, lst:list):
+def write_s(wks, lst:list, ue=None):
     try:
         if isinstance(lst, list):
-            wks.update("A3:BI53", lst)
-            return "Данные успешно записаны"
+            if ue:
+                wks.batch_clear(['A3:H25'])
+                wks.update("A3:BI53", lst, value_input_option='USER_ENTERED')
+                return "Данные успешно записаны"
+            else:
+                wks.update("A3:BI53", lst)
+                return "Данные успешно записаны"
         else:
             return "Неверный формат данных"
     except Exception as ex:
@@ -170,7 +175,8 @@ def next_subscription(format, indx, action, date=None):
         if isinstance(new_lectures, list) and isinstance(prev_lectures, list):
             students_with_pay = search_student_payment(students[indx][0])
             write_s(sheet_pages[format], students)
-            write_s(wks_pay, students_with_pay)
+            students_with_pay[0][0] = '=FILTER({even!A3:A53;odd!A3:A53;every_day!A3:A53};НЕ(ЕПУСТО({even!A3:A53;odd!A3:A53;every_day!A3:A53})))'
+            write_s(wks_pay, students_with_pay, True)
     except:
         prev_lectures = None
 
@@ -210,7 +216,7 @@ def freezing(lectures, days, format):
     elif format == 'tts':
         ras = [1, 3, 5]
     else:
-        ras = [0, 1, 2, 3, 4, ]
+        ras = [0, 1, 2, 3, 4]
         check = True
     start_date = datetime.strptime(lectures[-1],'%d.%m.%Y') + timedelta(days=2 - check)
     for _ in range(m):
@@ -223,7 +229,11 @@ def freezing(lectures, days, format):
         if idx + 1 in indexes:
             continue
         result.append(val)
-    return result
+
+    if format in ['mwf','tts']:
+        return result[:12]
+    else:
+        return result[:20]
 
 
 def freeze_student(format, indx, numbers):
@@ -238,7 +248,7 @@ def freeze_student(format, indx, numbers):
         freezing_student = freezing(students[indx][-20:], numbers, format)
         students[indx][-20:] = freezing_student
     elif format in ['mwf', 'tts']:
-        freezing_student = freezing(students[indx][-12], numbers, format)
+        freezing_student = freezing(students[indx][-12:], numbers, format)
         students[indx][-12:] = freezing_student
     try:
         write_s(sheet_pages[format], students)

@@ -129,7 +129,7 @@
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('pay',1, '◀️ Предыдущий абонемент', "previous")),
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('pay', 2, '🔙 Назад',  'back'))
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('cold', 1,  '🌬 Заморозить', 'freeze'))
-# cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('cold', 2,  '🔙 Назад', 'back'))
+# cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('cold', 2,  '🔙 Назад', 'main'))
 
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('payment', 1,  '⏭ Продолжить', 'continue'))
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('payment', 2,  '🆕 Новая дата', 'new_date'))
