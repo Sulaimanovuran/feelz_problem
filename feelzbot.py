@@ -21,6 +21,7 @@ user_answers = []
 pay_flag = False
 add_flag = False
 new_date_flag = False
+freeze_flag = False
 
 def start_add_student(message, format, again=None):
     global user_answers
@@ -52,6 +53,9 @@ def handle_user_input(message):
     elif new_date_flag:
         new_date.append(message.text)
         ask_next_question_new_date(message.chat.id)
+    elif freeze_flag:
+        freeze_answers.append(message.text)
+        ask_next_question_freeze(message.chat.id)
 
 
 def process_student_data(user_id):
@@ -133,10 +137,43 @@ def process_student_data_new_date(user_id):
         bot.send_message(user_id, text=new_lectures, reply_markup=cm.create_menu('main'), parse_mode="Markdown")
 
 
+################## FREEZE STUDENT ########################        
+freeze_question = ['Введите Ф.И. ученика', 'Введите номера уроков через запятую которые хотите заморозить: 5,7,9...']
+freeze_answers = []
+def start_freeze_student(message):
+    global freeze_answers, search_results
+    freeze_answers = []
+    if freeze_flag:
+        ask_next_question_freeze(message.chat.id)
+
+last_lectures = ''
+
+def ask_next_question_freeze(user_id):
+    global last_lectures
+    if len(freeze_answers) < len(freeze_question):
+        if len(freeze_answers) == 1:
+            search_results = search_student(freeze_answers[0])
+            if search_results:
+                last_lectures = filter_dates(search_results[0], search_results[-1])
+                bot.send_message(user_id, text=f'Оставшиеся занятия ученика:\n{last_lectures}', parse_mode='Markdown')
+                question_text = freeze_question[len(freeze_answers)]
+                bot.send_message(user_id, question_text)
+            else:
+                bot.send_message(user_id, text=f'Ученик *{freeze_answers[0]}* не найден', parse_mode='Markdown')
+        else:
+            question_text = freeze_question[len(freeze_answers)]
+            bot.send_message(user_id, question_text)
+    else:
+        process_student_data_freeze(user_id)
+
+def process_student_data_freeze(user_id):
+    message=f'Ученик {freeze_answers[0]}\nЗаморозить уроки №:{freeze_answers[-1]}.\nВсе верно?\n{last_lectures}' 
+    bot.send_message(user_id, text=message, reply_markup=cm.create_menu('cold'))
+
 ################## CALLBACK HANDLER ########################        
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
-    global pay_flag, add_flag, new_date_flag, lectures
+    global pay_flag, add_flag, new_date_flag, freeze_flag, lectures
     if call.data == 'new_student':
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Выберите формат", reply_markup= cm.create_menu('new_student'))
 
@@ -149,8 +186,13 @@ def callback_inline(call):
 
     if call.data == 'back':
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Что делаем?", reply_markup= cm.create_menu('main'))
+
     if call.data == 'cold':
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Проверьте данные", reply_markup= cm.create_menu('cold'))
+        pay_flag=False
+        add_flag=False
+        new_date_flag = False
+        freeze_flag = True
+        start_freeze_student(call.message)
 
     """New student"""
     if call.data in ['mwf', 'tts', 'ed']:
@@ -191,6 +233,14 @@ def callback_inline(call):
         add_flag=False
         new_date_flag = True
         start_add_student_new_date(call.message)
+    
+    """Freeze"""
+    if call.data == 'freeze':
+        freeze = freeze_student(search_results[0], search_results[-1], freeze_answers[-1])
+        if isinstance(freeze, list):
+            for num, date in enumerate(freeze, start=1):
+                
+
 
         
 

@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 import gspread
-from PIL import Image, ImageDraw, ImageFont
-from io import BytesIO
 
 
 """Авторизация"""
@@ -12,6 +10,7 @@ sh = sa.open_by_url("https://docs.google.com/spreadsheets/d/1TUfo70EJU-sLdjjmdKj
 wks = sh.worksheet('even')
 wks2 = sh.worksheet('odd')
 wks3 = sh.worksheet('every_day')
+wks_pay = sh.worksheet('Payment')
 
 sheet_pages = {'mwf': wks, 'tts': wks2, 'ed': wks3}
 
@@ -60,7 +59,7 @@ def get_next_lectures(start_date, format=None, d=None):
 
     return lectures
 
-
+# print(get_next_lectures('01.01.2024', 'ed'))
 
 
 def read_s(wks):
@@ -139,6 +138,15 @@ def search_student(name):
                 continue
     return None
 
+def search_student_payment(name):
+    students = read_s(wks_pay)
+    for student in students:
+        if name.lower() == student[0].lower():
+            student.append('Оплачено')
+
+    return students
+
+
 
 ##################### Payment ########################
 def next_subscription(format, indx, action, date=None):
@@ -152,20 +160,105 @@ def next_subscription(format, indx, action, date=None):
         new_lectures = get_next_lectures(date, format)
     else:
         return None
+    
     try:
         if format != 'ed':
             prev_lectures = students[indx][-12:]
         elif format == 'ed':
             prev_lectures = students[indx][-20:]
         students[indx] += new_lectures
-        write_s(sheet_pages[format], students)
+        if isinstance(new_lectures, list) and isinstance(prev_lectures, list):
+            students_with_pay = search_student_payment(students[indx][0])
+            write_s(sheet_pages[format], students)
+            write_s(wks_pay, students_with_pay)
     except:
         prev_lectures = None
 
     return new_lectures, prev_lectures
 
 
+##################### Freeze ########################
+from datetime import datetime
 
+def filter_dates(format, indx):
+    current_date = datetime.now().date()
+    formatted_dates = "```\n"
+    student = read_s(sheet_pages[format])[indx]
+
+    last_subscription = student[-12:] if format in ['mwf', 'tts'] else student[1:]
+
+    for number, date_str in enumerate(last_subscription, start=1):
+        try:
+            date_obj = datetime.strptime(date_str, '%d.%m.%Y').date()
+            if date_obj >= current_date and number == len(last_subscription):
+                formatted_dates+=f'    {number})  {date_str}'+'```'
+            elif date_obj >= current_date:
+                formatted_dates+=f'    {number})  {date_str}'+'\n'
+        except ValueError:
+            return f"Ошибка в формате даты: {date_str}"
+
+    return formatted_dates
+
+
+def freezing(lectures, days, format):
+    indexes = list(map(int, days.split(',')))
+    m = len(days)
+    n = len(lectures)
+    check = False
+    if format == 'mwf':
+        ras = [0, 2, 4]
+    elif format == 'tts':
+        ras = [1, 3, 5]
+    else:
+        ras = [0, 1, 2, 3, 4, ]
+        check = True
+    start_date = datetime.strptime(lectures[-1],'%d.%m.%Y') + timedelta(days=2 - check)
+    for _ in range(m):
+        while start_date.weekday() not in ras:
+            start_date += timedelta(days=1)
+        lectures.append(start_date.strftime("%d.%m.%Y"))
+        start_date += timedelta(days=2 - check)
+    result = []
+    for idx, val in enumerate(lectures):
+        if idx + 1 in indexes:
+            continue
+        result.append(val)
+    return result
+
+
+def freeze_student(format, indx, numbers):
+    try:
+        numbers = numbers.strip()
+        int(numbers[0])
+        int(numbers[-1])
+    except:
+        return "Некоректный формат данных"
+    students = read_s(sheet_pages[format])
+    if format == 'ed':
+        freezing_student = freezing(students[indx][-20:], numbers, format)
+        students[indx][-20:] = freezing_student
+    elif format in ['mwf', 'tts']:
+        freezing_student = freezing(students[indx][-12], numbers, format)
+        students[indx][-12:] = freezing_student
+    try:
+        write_s(sheet_pages[format], students)
+    except:
+        return "Ошибка заморозки"
+    return freezing_student
+    
+
+
+
+
+
+
+
+
+
+# lectures2 = ['01.01.2024', '02.01.2024', '03.01.2024', '04.01.2024', '05.01.2024', '08.01.2024', '09.01.2024', '10.01.2024', '11.01.2024', '12.01.2024', '15.01.2024', '16.01.2024', '17.01.2024', '18.01.2024', '19.01.2024', '22.01.2024', '23.01.2024', '24.01.2024', '25.01.2024', '26.01.2024']
+
+
+# print(filter_dates('ed', 2))
 
 
 
@@ -174,3 +267,5 @@ def next_subscription(format, indx, action, date=None):
 
 если action == 'new_date' вызываем функцию get_next_lectures(date, format)
 '''
+
+['17.01.2024', '19.01.2024', '22.01.2024', '24.01.2024', '26.01.2024', '29.01.2024', '31.01.2024', '02.02.2024', '05.02.2024', '07.02.2024', '09.02.2024']

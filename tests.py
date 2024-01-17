@@ -96,3 +96,25 @@ def create_image():
 # create_image()
 # print(get_next_lectures('15.01.2024', 'ed'))
 
+from datetime import datetime
+
+def filter_dates(input_dates):
+    current_date = datetime.now()
+    formatted_dates = []
+
+    for date_str in input_dates:
+        try:
+            date_obj = datetime.strptime(date_str, '%d.%m.%Y')
+            if date_obj <= current_date:
+                formatted_dates.append(date_str)
+        except ValueError:
+            print(f"Ошибка в формате даты: {date_str}")
+
+    return formatted_dates
+
+# Пример использования
+input_dates = ['13.01.2024', '15.01.2024', '17.01.2024', '18.01.2024', '19.01.2024', '20.01.2024', '31.01.2024', '02.02.2024', '05.02.2024', '07.02.2024', '09.02.2024']
+filtered_dates = filter_dates(input_dates)
+
+print("Даты, которые меньше или равны текущей дате:")
+print(filtered_dates)
