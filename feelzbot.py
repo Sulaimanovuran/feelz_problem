@@ -70,7 +70,7 @@ def process_student_data(user_id):
             else:
                 message+=f'   {num}) {date}```'
 
-        bot.send_photo(user_id, photo=open('1.png', 'rb'), caption=message, parse_mode='Markdown')
+        bot.send_photo(user_id, photo=open('logo.png', 'rb'), caption=message, parse_mode='Markdown')
         bot.send_message(user_id, text="Что делаем?", reply_markup= cm.create_menu('main'))
     else:
         bot.send_message(user_id, student_validated_data)
@@ -132,7 +132,7 @@ def process_student_data_new_date(user_id):
                 message+=f'   {num}) {date}\n'
             else:
                 message+=f'   {num}) {date}```'
-        bot.send_photo(user_id, photo=open('Unknown.png', 'rb'), caption=message, reply_markup=cm.create_menu('pay'), parse_mode='Markdown')
+        bot.send_photo(user_id, photo=open('logo.png', 'rb'), caption=message, reply_markup=cm.create_menu('pay'), parse_mode='Markdown')
     else:
         bot.send_message(user_id, text=new_lectures, reply_markup=cm.create_menu('main'), parse_mode="Markdown")
 
@@ -211,7 +211,7 @@ def callback_inline(call):
                     message+=f'   {num}) {date}\n'
                 else:
                     message+=f'   {num}) {date}```'
-            bot.send_photo(call.message.chat.id, photo=open('2.png', 'rb'), caption=message, reply_markup=cm.create_menu('pay'), parse_mode='Markdown')
+            bot.send_photo(call.message.chat.id, photo=open('logo.png', 'rb'), caption=message, reply_markup=cm.create_menu('pay'), parse_mode='Markdown')
             # bot.send_message(call.message.chat.id, text=message, reply_markup=cm.create_menu('pay'), parse_mode="Markdown")
         else:
             bot.send_message(call.message.chat.id, text=lectures[0], reply_markup=cm.create_menu('main'), parse_mode="Markdown")
@@ -224,7 +224,7 @@ def callback_inline(call):
                     message+=f'   {num}) {date}\n'
                 else:
                     message+=f'   {num}) {date}```'
-            bot.send_photo(call.message.chat.id, photo=open('3.png', 'rb'), caption=message, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
+            bot.send_photo(call.message.chat.id, photo=open('logo.png', 'rb'), caption=message, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
         else:
             bot.send_message(call.message.chat.id, text='Нет предыдущих занятий', reply_markup=cm.create_menu('main'))
 
@@ -245,7 +245,7 @@ def callback_inline(call):
                 else:
                     message+=f'   {num}) {date}\n'
                 
-            bot.send_photo(call.message.chat.id, photo=open('Unknown.png', 'rb'), caption=message, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
+            bot.send_photo(call.message.chat.id, photo=open('logo.png', 'rb'), caption=message, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
         else:
             bot.send_message(call.message.chat.id, text=freeze, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
         
