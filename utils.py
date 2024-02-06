@@ -71,8 +71,8 @@ def write_s(wks, lst:list, ue=None):
     try:
         if isinstance(lst, list):
             if ue:
-                wks.batch_clear(['A3:H25'])
-                wks.update("A3:BI53", lst, value_input_option='USER_ENTERED')
+                # wks.batch_clear(['A3:H25'])
+                wks.update("B3:BI53", lst)
                 return "Данные успешно записаны"
             else:
                 wks.update("A3:BI53", lst)
@@ -96,7 +96,7 @@ def add_students(student_data):
     try:
         students = read_s(sheet_pages[student_data[0]])
         lectures = get_next_lectures(student_data[-1], student_data[0])
-        # print(lectures)
+
         students.append([student_data[1]] + lectures)
         return write_s(sheet_pages[student_data[0]], students), lectures
     
@@ -145,11 +145,12 @@ def search_student(name):
 
 def search_student_payment(name):
     students = read_s(wks_pay)
+    students_payment = []
     for student in students:
         if name.lower() == student[0].lower():
             student.append('Оплачено')
-
-    return students
+        students_payment.append(student[1:])
+    return students_payment
 
 
 
@@ -175,7 +176,6 @@ def next_subscription(format, indx, action, date=None):
         if isinstance(new_lectures, list) and isinstance(prev_lectures, list):
             students_with_pay = search_student_payment(students[indx][0])
             write_s(sheet_pages[format], students)
-            students_with_pay[0][0] = '=FILTER({even!A3:A53;odd!A3:A53;every_day!A3:A53};НЕ(ЕПУСТО({even!A3:A53;odd!A3:A53;every_day!A3:A53})))'
             write_s(wks_pay, students_with_pay, True)
     except:
         prev_lectures = None
