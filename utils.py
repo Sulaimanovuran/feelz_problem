@@ -63,7 +63,7 @@ def get_next_lectures(start_date, format=None, d=None):
 
 
 def read_s(wks):
-    students = wks.get("A3:BI53")
+    students = wks.get("A3:BI103")
     return students
 
 
@@ -72,10 +72,10 @@ def write_s(wks, lst:list, ue=None):
         if isinstance(lst, list):
             if ue:
                 # wks.batch_clear(['A3:H25'])
-                wks.update("B3:BI53", lst)
+                wks.update("B3:BI103", lst)
                 return "Данные успешно записаны"
             else:
-                wks.update("A3:BI53", lst)
+                wks.update("A3:BI103", lst)
                 return "Данные успешно записаны"
         else:
             return "Неверный формат данных"
