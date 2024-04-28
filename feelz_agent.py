@@ -1,9 +1,13 @@
 import telebot
 from requests.exceptions import RequestException
 import requests
+import json
+
 from buttons_db.db_operations import CreateMenu
 
 from new_utils import *
+
+ip = 'http://127.0.0.1:5000'
 
 bot = telebot.TeleBot("7127670654:AAHmAaHtwZRicQ9ZpalygPZKqShFEqxEiX4")
 cm = CreateMenu()
@@ -11,7 +15,7 @@ cm = CreateMenu()
 @bot.message_handler(commands=["start"])
 def start(message):
     bot.send_message(message.chat.id, 
-                     "Добро пожаловать\nДанные созранены в [таблице](https://docs.google.com/spreadsheets/d/1hE0xs25iBil169bLxH8jvIimvUgOKruQojNg5lXGfhI/edit#gid=237711070)",
+                     "Добро пожаловать\nДанные сохранены в [таблице](https://docs.google.com/spreadsheets/d/1hE0xs25iBil169bLxH8jvIimvUgOKruQojNg5lXGfhI/edit#gid=237711070)",
                       reply_markup= cm.create_menu('main'), parse_mode='Markdown')
 
 ################### BUTTONS HANDLING #############################
@@ -154,8 +158,14 @@ def handle_date(message):
 
     if isinstance(message, list):
         user_states = {}
-        message = str(message) + '\nУченик успешно добавлен' #TODO: Отправить POST запрос на создание нового ученика
-        bot.send_message(chat_id=chat_id, text=message)
+        json_data = {"name": f"{add_student_answers['name']}", 
+                     "subscription_type": f"{add_student_answers['subscription_type']}",
+                     "days": message}
+
+        response = requests.post(f'{ip}/api/add', json=json_data)
+
+        message = response.json()['message']
+        bot.send_message(chat_id=chat_id, text=message, parse_mode='Markdown')
         bot.send_message(chat_id=chat_id, text="Выберите действие", reply_markup=cm.create_menu('main'))
     else:
         bot.send_message(chat_id=chat_id, text=message)
