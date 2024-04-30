@@ -1,4 +1,4 @@
-""" Этот код запускается один раз, для создания кнопок в БД"""
+# """ Этот код запускается один раз, для создания кнопок в БД"""
 
 # import sqlite3
 
@@ -33,6 +33,7 @@
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('cold', 3,  '🔙 Назад', 'main'))
 
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('payment', 1,  '⏭ Продолжить', 'continue'))
+# cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('payment', 1,  '🧨 Продолжить в долг', 'continue'))
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('payment', 2,  '🆕 Новая дата', 'new_date'))
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('payment', 3,  '🔙 Назад','main'))
 
@@ -43,4 +44,4 @@
 # connection.close()
 
 
-# cursor.execute('UPDATE create_menu SET age = ? WHERE username = ?', (29, 'newuser'))
+## cursor.execute('UPDATE create_menu SET age = ? WHERE username = ?', (29, 'newuser'))

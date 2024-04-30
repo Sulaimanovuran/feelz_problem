@@ -1,10 +1,10 @@
 import telebot
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 from requests.exceptions import RequestException
 import requests
 import json
 
 from buttons_db.db_operations import CreateMenu
-
 from new_utils import *
 
 ip = 'http://127.0.0.1:5000'
@@ -17,25 +17,9 @@ def start(message):
     bot.send_message(message.chat.id, 
                      "Добро пожаловать\nДанные сохранены в [таблице](https://docs.google.com/spreadsheets/d/1hE0xs25iBil169bLxH8jvIimvUgOKruQojNg5lXGfhI/edit#gid=237711070)",
                       reply_markup= cm.create_menu('main'), parse_mode='Markdown')
+    
 
 ################### BUTTONS HANDLING #############################
-
-# @bot.callback_query_handler(func=lambda call: True)
-# def callback_inline(call):
-#     if call.data == 'main':
-#         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Что делаем?", reply_markup= cm.create_menu('main'))
-
-#     if call.data == 'new_student':
-#         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="New Student", reply_markup= cm.create_menu('new_student'))
-
-#     if call.data == 'payment':
-#         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Payment", reply_markup= cm.create_menu('payment'))
-
-#     if call.data == 'pay':
-#         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Pay", reply_markup= cm.create_menu('pay'))
-
-#     if call.data == 'cold':
-#         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Cold", reply_markup= cm.create_menu('cold'))
 
 
 # Словарь для отслеживания состояний пользователей
@@ -141,8 +125,9 @@ def handle_name(message):
     # TODO: Сделать валидацию имени, отправлять запрос в БД и 
     # TODO: сохранять имя только в случае если в БД нет такого же имени
 
-    # Здесь запрашиваем дату начала обучения и переходим к следующему шагу
-    bot.send_message(chat_id=chat_id, text=f"Вы ввели имя: {user_name}\nВведите дату начала обучения")
+    # Здесь запрашиваем данные об оплате
+    bot.send_message(chat_id=chat_id, 
+                     text=f"Вы ввели имя: {user_name}\nВведите дату начала обучения")
 
 
 @bot.message_handler(func=lambda message: user_states.get(message.chat.id) == 'waiting_for_start_date_add_student')
@@ -155,7 +140,6 @@ def handle_date(message):
 
     # Валидация даты
     message = get_next_lectures(add_student_answers['start_date'], add_student_answers['subscription_type'])
-
     if isinstance(message, list):
         user_states = {}
         json_data = {"name": f"{add_student_answers['name']}", 
@@ -165,7 +149,12 @@ def handle_date(message):
         response = requests.post(f'{ip}/api/add', json=json_data)
 
         message = response.json()['message']
-        bot.send_message(chat_id=chat_id, text=message, parse_mode='Markdown')
+
+        if response.status_code == 201:
+            bot.send_message(chat_id=chat_id, text=message, parse_mode='Markdown')
+        else:
+            bot.send_message(chat_id=chat_id, text=message)
+
         bot.send_message(chat_id=chat_id, text="Выберите действие", reply_markup=cm.create_menu('main'))
     else:
         bot.send_message(chat_id=chat_id, text=message)
