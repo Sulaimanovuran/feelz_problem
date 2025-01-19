@@ -70,7 +70,7 @@ def process_student_data(user_id):
             else:
                 message+=f'   {num}) {date}```'
 
-        bot.send_photo(user_id, photo=open('1.png', 'rb'), caption=message, parse_mode='Markdown')
+        bot.send_photo(user_id, photo=open('Unknown.png', 'rb'), caption=message, parse_mode='Markdown')
         bot.send_message(user_id, text="Что делаем?", reply_markup= cm.create_menu('main'))
     else:
         bot.send_message(user_id, student_validated_data)
@@ -137,7 +137,50 @@ def process_student_data_new_date(user_id):
         bot.send_message(user_id, text=new_lectures, reply_markup=cm.create_menu('main'), parse_mode="Markdown")
 
 
-################## FREEZE STUDENT ########################        
+################## FREEZE STUDENT ########################
+
+@bot.callback_query_handler(func=lambda call: call.data == 'mass_freeze')
+def start_mass_freeze(call):
+    bot.send_message(call.message.chat.id, "Выберите даты для заморозки:")
+    show_calendar(call.message.chat.id)
+
+def show_calendar(chat_id):
+    today = datetime.now()
+    markup = telebot.types.InlineKeyboardMarkup(row_width=7)
+    days = [telebot.types.InlineKeyboardButton((today + timedelta(days=i)).strftime('%d.%m'), callback_data=f'date_{i}') for i in range(30)]
+    markup.add(*days)
+    markup.add(telebot.types.InlineKeyboardButton('Завершить выбор', callback_data='finish_freeze'))
+    markup.add(telebot.types.InlineKeyboardButton('🔙 Назад', callback_data='back'))
+    bot.send_message(chat_id, "Выберите дни, которые хотите заморозить:", reply_markup=markup)
+
+selected_dates = []
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('date_'))
+def select_date(call):
+    global selected_dates
+    offset = int(call.data.split('_')[1])
+    date = (datetime.now() + timedelta(days=offset)).strftime('%d.%m.%Y')
+    if date not in selected_dates:
+        selected_dates.append(date)
+        bot.answer_callback_query(call.id, f"Выбрано: {date}")
+    else:
+        selected_dates.remove(date)
+        bot.answer_callback_query(call.id, f"Удалено: {date}")
+
+@bot.callback_query_handler(func=lambda call: call.data == 'finish_freeze')
+def apply_freeze(call):
+    global selected_dates
+    if not selected_dates:
+        bot.send_message(call.message.chat.id, "Вы не выбрали даты.")
+        return
+    
+    # Логика заморозки для всех учеников
+    freeze_all_students(selected_dates)
+    bot.send_message(call.message.chat.id, f"Занятия на даты {', '.join(selected_dates)} заморожены для всех учеников.")
+    selected_dates = []
+
+
+
 freeze_question = ['Введите Ф.И. ученика', 'Введите номера уроков через запятую которые хотите заморозить(5,6,7...) ТОЛЬКО ПО ПОРЯДКУ']
 freeze_answers = []
 def start_freeze_student(message):
@@ -175,7 +218,10 @@ def process_student_data_freeze(user_id):
 def callback_inline(call):
     global pay_flag, add_flag, new_date_flag, freeze_flag, lectures
     if call.data == 'new_student':
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Выберите формат", reply_markup= cm.create_menu('new_student'))
+        if call.message.text:
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Выберите формат", reply_markup=cm.create_menu('new_student'))
+        else:
+            bot.send_message(chat_id=call.message.chat.id, text="Выберите формат", reply_markup=cm.create_menu('new_student'))
 
     if call.data == 'pay':
         pay_flag=True
@@ -211,7 +257,7 @@ def callback_inline(call):
                     message+=f'   {num}) {date}\n'
                 else:
                     message+=f'   {num}) {date}```'
-            bot.send_photo(call.message.chat.id, photo=open('2.png', 'rb'), caption=message, reply_markup=cm.create_menu('pay'), parse_mode='Markdown')
+            bot.send_photo(call.message.chat.id, photo=open('Unknown.png', 'rb'), caption=message, reply_markup=cm.create_menu('pay'), parse_mode='Markdown')
             # bot.send_message(call.message.chat.id, text=message, reply_markup=cm.create_menu('pay'), parse_mode="Markdown")
         else:
             bot.send_message(call.message.chat.id, text=lectures[0], reply_markup=cm.create_menu('main'), parse_mode="Markdown")
@@ -224,7 +270,7 @@ def callback_inline(call):
                     message+=f'   {num}) {date}\n'
                 else:
                     message+=f'   {num}) {date}```'
-            bot.send_photo(call.message.chat.id, photo=open('3.png', 'rb'), caption=message, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
+            bot.send_photo(call.message.chat.id, photo=open('Unknown.png', 'rb'), caption=message, reply_markup=cm.create_menu('main'), parse_mode='Markdown')
         else:
             bot.send_message(call.message.chat.id, text='Нет предыдущих занятий', reply_markup=cm.create_menu('main'))
 

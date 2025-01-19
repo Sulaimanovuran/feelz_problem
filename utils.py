@@ -5,7 +5,7 @@ import gspread
 """Авторизация"""
 sa = gspread.service_account()
 
-sh = sa.open_by_url("https://docs.google.com/spreadsheets/d/1TUfo70EJU-sLdjjmdKjIFyVVwDrmf2FJceUpLXhlu0A/edit?hl=ru#gid=0")
+sh = sa.open_by_url("https://docs.google.com/spreadsheets/d/1S75wW5VL1TV8uhOJKlngJggT7MGDOTF5cBLz5vAqae8/edit?gid=1000419405#gid=1000419405")
 
 wks = sh.worksheet('even')
 wks2 = sh.worksheet('odd')
@@ -16,6 +16,7 @@ sheet_pages = {'mwf': wks, 'tts': wks2, 'ed': wks3}
 
 
 """ Расчет дат обучения """
+
 def get_next_lectures(start_date, format=None, d=None):
     try:
         start_date = datetime.strptime(start_date, "%d.%m.%Y")
@@ -59,7 +60,7 @@ def get_next_lectures(start_date, format=None, d=None):
 
     return lectures
 
-# print(get_next_lectures('01.01.2024', 'ed'))
+print(get_next_lectures('21.02.2025', 'mwf', 1))
 
 
 def read_s(wks):
@@ -71,11 +72,11 @@ def write_s(wks, lst:list, ue=None):
     try:
         if isinstance(lst, list):
             if ue:
-                wks.batch_clear(['A3:H25'])
-                wks.update("A3:BI53", lst, value_input_option='USER_ENTERED')
+                wks.batch_clear(['A3:Z100'])
+                wks.update("A3:Z100", lst, value_input_option='USER_ENTERED')
                 return "Данные успешно записаны"
             else:
-                wks.update("A3:BI53", lst)
+                wks.update("A3:FY200", lst)
                 return "Данные успешно записаны"
         else:
             return "Неверный формат данных"
@@ -256,6 +257,44 @@ def freeze_student(format, indx, numbers):
         return "Ошибка заморозки"
     return freezing_student
     
+
+def freeze_all_students(freeze_dates):
+    """
+    Замораживает указанные даты для всех учеников, добавляя новые даты в соответствии с их форматом обучения.
+    
+    :param freeze_dates: Список строковых дат, которые нужно заморозить (в формате '%d.%m.%Y').
+    """
+    updated_students = {key: [] for key in sheet_pages.keys()}  # Для хранения обновлённых данных
+
+    for format, sheet in sheet_pages.items():
+        students = read_s(sheet)  # Считываем данные с текущего листа
+        
+        for student in students:
+            if len(student) > 1:  # Учитываем только студентов с занятиями
+                name, lectures = student[0], student[1:]
+                for freeze_date in freeze_dates:
+                    if freeze_date in lectures:
+                        # Найти индекс замораживаемой даты
+                        index = lectures.index(freeze_date)
+                        
+                        # Удалить замораживаемую дату
+                        lectures.pop(index)
+
+                        # Вычислить новую дату в зависимости от формата обучения
+                        print(lectures[-1], format, 1)
+                        additional_date = get_next_lectures(lectures[-1], format, 1)[1]
+                        print(additional_date)
+                        lectures.append(additional_date)  # Добавить новую дату
+
+                # Обновить список студента
+                updated_students[format].append([name] + lectures)
+
+            else:
+                updated_students[format].append(student)  # Добавляем студента без изменений
+
+    # Записываем обновлённые данные обратно в листы
+    for format, students in updated_students.items():
+        write_s(sheet_pages[format], students)
 
 
 

@@ -122,6 +122,7 @@
 # # cursor.execute('UPDATE create_menu SET age = ? WHERE username = ?', (29, 'newuser'))
 
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('main', 3, "🥶 Зоморозка", 'cold')),
+# cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('main', 3, "❄️ Массовая зоморозка", 'mass_freeze')),
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('new_student', 1, "Пн • Ср • Пт", 'mwf')),
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('new_student', 2, "Вт • Чт • Сб", 'tts')),
 # cursor.execute('INSERT INTO create_menu (type_menu, order_num, btn_name, btn_callback) VALUES (?, ?, ?, ?)', ('new_student', 3, "Пн ••• Пт", 'ed')),
