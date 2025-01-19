@@ -9,7 +9,3 @@
 
 4. Запусти бота
 `python3 main.py`
-
-https://cp.vdsina.ru/vds/create
-stewiegriffinbadkid@gmail.com
-Murakami670
