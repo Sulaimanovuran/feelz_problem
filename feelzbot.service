@@ -1,0 +1,13 @@
+[Unit]
+Description=Feelz operational work bot
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/macbookbrogoods/feelz_problem/venv/bin/python /home/macbookbrogoods/feelz_problem/feelzbot.py
+WorkingDirectory=/home/macbookbrogoods/feelz_problem
+Restart=always
+Environment=HOME=/home/macbookbrogoods
+
+[Install]
+WantedBy=multi-user.target
